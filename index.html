@@ -17,7 +17,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="logo">INFINITE <i>/</i> ARCHIVE</div><div class="topnav"><button onclick="document.getElementById('books').scrollIntoView({behavior:'smooth'})">书库</button><button onclick="toggleSettings()">阅读设置</button><button onclick="openImport()">添加 AO3</button></div></header>
+<header class="top"><div class="logo">INFINITE <i>/</i> ARCHIVE</div><div class="topnav"><button>书库</button><button>阅读设置</button><button>添加 AO3</button></div></header>
 <section class="hero"><div class="eyebrow">私人阅读室 / 档案 001</div><h1>THE<br><em>INFINITE</em><br>LIBRARY.</h1><div class="orbit"></div></section>
 <section class="wrap" id="books"><div class="head"><h2>最近阅读</h2><span>私人藏书 / <b id="count">0</b> 本</span></div><div class="grid" id="library"></div></section>
 <section class="wrap"><div class="head"><h2>导入作品</h2><span>AO3 / 外部档案</span></div><div class="import"><input id="url" placeholder="粘贴 AO3 作品链接，例如 https://archiveofourown.org/works/12345678"><button onclick="importAO3()">导入到书库</button><div class="status" id="status"></div></div></section>
@@ -37,7 +37,7 @@
 <label style="display:block;color:#aaa;font-size:12px;margin-top:18px">自定义字体（TTF / OTF）</label><input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"><button class="save" onclick="resetSettings()">恢复默认</button>
 </div>
 
-<section class="reader" id="reader"><div class="rbar"><button onclick="closeReader()">← 返回书库</button><div class="rtitle" id="rmeta"></div><button onclick="toggleSettings()">阅读设置</button></div><article class="article" id="article"></article></section>
+<section class="reader" id="reader"><div class="rbar"><button>← 返回书库</button><div class="rtitle" id="rmeta"></div><button>阅读设置</button></div><article class="article" id="article"></article></section>
 <script>
 const $ = (s) => document.querySelector(s);
 const API_KEY = 'infinite_archive_api';
