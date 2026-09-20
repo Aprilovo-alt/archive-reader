@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Infinite Archive · 私人阅读室</title>
+<style>
+:root{--bg:#090a0c;--paper:#f0eee8;--ink:#181818;--muted:#8c8c8c;--line:#292a2d;--accent:#d83b50;--reader:#ebe8e0;--readerInk:#202020;--size:18px;--lh:2;--measure:760px;--letter:0px;--para:1.5em}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:#eee;font-family:system-ui,"Noto Serif SC",serif}button,input,select{font:inherit}button{cursor:pointer}
+.top{height:64px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20;background:#090a0ce8;backdrop-filter:blur(14px)}
+.logo{font:12px ui-monospace;letter-spacing:.22em}.logo i{color:var(--accent);font-style:normal}.topnav{display:flex;gap:8px}.topnav button,.ghost{border:1px solid #444;background:transparent;color:#ddd;padding:8px 12px;font-size:12px}
+.hero{min-height:72vh;padding:80px 7vw;position:relative;overflow:hidden}.eyebrow{font:10px ui-monospace;color:#888;letter-spacing:.2em}.hero h1{font:clamp(64px,13vw,170px);font-family:Georgia,serif;font-weight:400;line-height:.78;letter-spacing:-.06em;margin:34px 0}.hero h1 em{display:block;color:transparent;-webkit-text-stroke:1px #ddd;margin-left:9vw}.orbit{position:absolute;width:55vw;height:55vw;max-width:680px;max-height:680px;border:1px solid #3a3b3d;border-radius:50%;right:-9vw;top:14vh;transform:rotate(24deg)}.orbit:after{content:"";position:absolute;inset:14%;border:1px solid #292a2d;border-radius:50%}
+.wrap{padding:70px 7vw;border-top:1px solid var(--line)}.head{display:flex;justify-content:space-between;align-items:end;margin-bottom:28px}.head h2{font:italic 40px Georgia,serif;font-weight:400;margin:0}.head span{font:10px ui-monospace;color:#777}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{min-height:330px;border:1px solid var(--line);padding:15px;background:linear-gradient(145deg,#17181a,#0b0c0e);position:relative}.cover{height:230px;border:1px solid #666;display:grid;place-items:center;text-align:center;font:italic 30px Georgia,serif;padding:20px}.card h3{font-size:15px;margin:12px 0 4px}.card p{font:10px ui-monospace;color:#777;margin:0}.card button{position:absolute;inset:auto 14px 14px auto;border:1px solid #555;background:#111;color:#ddd;padding:7px 10px;font-size:10px}
+.import{border:1px solid var(--line);padding:20px;display:grid;grid-template-columns:1fr auto;gap:12px}.import input,.settings input{background:#0c0d0f;border:1px solid #444;color:#eee;padding:12px;outline:0}.import button{border:1px solid #777;background:transparent;color:#fff;padding:12px 18px}.status{grid-column:1/-1;color:#999;font-size:12px;min-height:20px}
+.reader{display:none;position:fixed;inset:0;z-index:50;background:var(--reader);color:var(--readerInk);overflow:auto}.reader.on{display:block}.rbar{position:sticky;top:0;height:62px;border-bottom:1px solid #ccc;background:#ebe8e0e8;backdrop-filter:blur(12px);display:flex;justify-content:space-between;align-items:center;padding:0 22px;z-index:2}.rbar button{background:none;border:0;color:#333}.rtitle{font:12px ui-monospace}.article{max-width:var(--measure);margin:auto;padding:90px 28px 160px;font-size:var(--size);line-height:var(--lh);letter-spacing:var(--letter)}.article h1{font:clamp(42px,7vw,78px) Georgia,serif;line-height:.9;letter-spacing:-.04em;margin:0 0 50px}.article .by{font:11px ui-monospace;color:#777;margin-bottom:40px}.article p{margin:0 0 var(--para)}.article img{max-width:100%}
+.panel{position:fixed;right:18px;top:78px;width:min(360px,calc(100vw - 36px));background:#111214;border:1px solid #444;padding:20px;z-index:60;display:none;box-shadow:0 20px 60px #0008}.panel.on{display:block}.panel h3{font:italic 27px Georgia;margin:0 0 18px}.row{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;margin:14px 0;font-size:12px;color:#bbb}.row input[type=range]{width:100%}.row input[type=color]{width:45px;height:30px;padding:0;border:0}.panel input[type=file]{width:100%;font-size:11px}.panel .save{margin-top:15px;width:100%;padding:10px;background:#eee;color:#111;border:0}
+@media(max-width:800px){.top{padding:0 15px}.topnav button:first-child{display:none}.hero{padding:65px 24px;min-height:680px}.hero h1{font-size:80px}.orbit{width:420px;height:420px;right:-170px;top:260px}.wrap{padding:55px 20px}.grid{grid-template-columns:1fr 1fr}.card{min-height:290px}.cover{height:195px}.import{grid-template-columns:1fr}.article{padding:65px 22px 120px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="logo">INFINITE <i>/</i> ARCHIVE</div><div class="topnav"><button onclick="document.getElementById('books').scrollIntoView({behavior:'smooth'})">书库</button><button onclick="toggleSettings()">阅读设置</button><button onclick="openImport()">添加 AO3</button></div></header>
+<section class="hero"><div class="eyebrow">私人阅读室 / 档案 001</div><h1>THE<br><em>INFINITE</em><br>LIBRARY.</h1><div class="orbit"></div></section>
+<section class="wrap" id="books"><div class="head"><h2>最近阅读</h2><span>私人藏书 / <b id="count">0</b> 本</span></div><div class="grid" id="library"></div></section>
+<section class="wrap"><div class="head"><h2>导入作品</h2><span>AO3 / 外部档案</span></div><div class="import"><input id="url" placeholder="粘贴 AO3 作品链接，例如 https://archiveofourown.org/works/12345678"><button onclick="importAO3()">导入到书库</button><div class="status" id="status"></div></div></section>
+
+<div class="panel" id="settings">
+<h3>阅读设置</h3>
+<div class="row"><span>字号</span><input id="size" type="range" min="14" max="30" value="18"><output>18px</output></div>
+<div class="row"><span>行距</span><input id="lh" type="range" min="12" max="28" value="20"><output>2.0</output></div>
+<div class="row"><span>字距</span><input id="letter" type="range" min="-1" max="5" value="0"><output>0px</output></div>
+<div class="row"><span>页面宽度</span><input id="measure" type="range" min="560" max="980" value="760"><output>760px</output></div>
+<div class="row"><span>背景</span><input id="bg" type="color" value="#ebe8e0"><output></output></div>
+<div class="row"><span>文字</span><input id="ink" type="color" value="#202020"><output></output></div>
+<div class="row"><span>段落间距</span><input id="para" type="range" min="5" max="30" value="15"><output>1.5em</output></div>
+<label style="display:block;color:#aaa;font-size:12px;margin-top:18px">AO3 抓取服务地址</label>
+<input id="apiUrl" placeholder="https://你的-worker.workers.dev" style="width:100%;margin-top:8px">
+<small style="display:block;color:#666;line-height:1.6;margin-top:6px">第一次部署 Worker 后，把它的地址粘贴到这里。</small>
+<label style="display:block;color:#aaa;font-size:12px;margin-top:18px">自定义字体（TTF / OTF）</label><input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"><button class="save" onclick="resetSettings()">恢复默认</button>
+</div>
+
+<section class="reader" id="reader"><div class="rbar"><button onclick="closeReader()">← 返回书库</button><div class="rtitle" id="rmeta"></div><button onclick="toggleSettings()">阅读设置</button></div><article class="article" id="article"></article></section>
+<script>
+const $=s=>document.querySelector(s), API_KEY='infinite_archive_api';
+let books=JSON.parse(localStorage.getItem('ia_books')||'[]');
+
+function save(){localStorage.setItem('ia_books',JSON.stringify(books));render();}
+function render(){
+ $('#count').textContent=books.length;
+ $('#library').innerHTML=books.map((b,i)=>`<div class="card"><div class="cover">${esc(b.title)}</div><h3>${esc(b.title)}</h3><p>${esc(b.author||'未知作者')} · ${b.chapters?.length||0} 章</p><button onclick="openBook(${i})">阅读</button></div>`).join('');
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function openImport(){document.getElementById('url').focus();document.getElementById('url').scrollIntoView({behavior:'smooth',block:'center'})}
+function api(){return localStorage.getItem(API_KEY)||''}
+$('#apiUrl').value=api();
+$('#apiUrl').addEventListener('change',e=>localStorage.setItem(API_KEY,e.target.value.trim()));
+async function importAO3(){
+ const u=$('#url').value.trim(), st=$('#status');
+ if(!/^https:\/\/archiveofourown\\.org\\/works\\/\\d+/i.test(u)){st.textContent='请输入公开 AO3 作品链接。';return}
+ if(!api()){st.textContent='还没有设置 AO3 抓取服务地址：点击“阅读设置”，在本版本中需要先部署 Cloudflare Worker。';return}
+ st.textContent='正在抓取作品……';
+ try{
+   const r=await fetch(api().replace(/\\/$/,'')+'/api/import?url='+encodeURIComponent(u));
+   const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||'抓取失败');
+   books.unshift(d);save();st.textContent='导入成功。';$('#url').value='';
+ }catch(e){st.textContent='导入失败：'+e.message}
+}
+function openBook(i){
+ const b=books[i];$('#reader').classList.add('on');$('#rmeta').textContent=b.author+' / '+b.chapters.length+' 章';
+ $('#article').innerHTML='<h1>'+esc(b.title)+'</h1><div class="by">作者：'+esc(b.author)+'</div>'+b.chapters.map((x,n)=>'<section><h2 style="font:italic 30px Georgia;margin-top:70px">第 '+(n+1)+' 章</h2>'+x+'</section>').join('');
+}
+function closeReader(){$('#reader').classList.remove('on')}
+function toggleSettings(){$('#settings').classList.toggle('on')}
+function css(){let r=document.documentElement.style;r.setProperty('--size',$('#size').value+'px');r.setProperty('--lh',(Number($('#lh').value)/10).toFixed(1));r.setProperty('--letter',$('#letter').value+'px');r.setProperty('--measure',$('#measure').value+'px');r.setProperty('--reader', $('#bg').value);r.setProperty('--readerInk',$('#ink').value);r.setProperty('--para',($('#para').value/10)+'em')}
+['size','lh','letter','measure','bg','ink','para'].forEach(id=>$(('#'+id)).addEventListener('input',css));
+$('#fontFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let url=URL.createObjectURL(f);let style=document.getElementById('customFont')||document.head.appendChild(Object.assign(document.createElement('style'),{id:'customFont'}));style.textContent=`@font-face{font-family:MyArchiveFont;src:url("${url}") format("truetype")} .article{font-family:MyArchiveFont,serif}`});
+function resetSettings(){localStorage.removeItem('ia_settings');location.reload()}
+render();css();
+</script>
+</body></html>
