@@ -39,40 +39,168 @@
 
 <section class="reader" id="reader"><div class="rbar"><button onclick="closeReader()">← 返回书库</button><div class="rtitle" id="rmeta"></div><button onclick="toggleSettings()">阅读设置</button></div><article class="article" id="article"></article></section>
 <script>
-const $=s=>document.querySelector(s), API_KEY='infinite_archive_api';
-let books=JSON.parse(localStorage.getItem('ia_books')||'[]');
+const $ = (s) => document.querySelector(s);
+const API_KEY = 'infinite_archive_api';
+let books = JSON.parse(localStorage.getItem('ia_books') || '[]');
 
-function save(){localStorage.setItem('ia_books',JSON.stringify(books));render();}
-function render(){
- $('#count').textContent=books.length;
- $('#library').innerHTML=books.map((b,i)=>`<div class="card"><div class="cover">${esc(b.title)}</div><h3>${esc(b.title)}</h3><p>${esc(b.author||'未知作者')} · ${b.chapters?.length||0} 章</p><button onclick="openBook(${i})">阅读</button></div>`).join('');
+function save() {
+  localStorage.setItem('ia_books', JSON.stringify(books));
+  render();
 }
-function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function openImport(){document.getElementById('url').focus();document.getElementById('url').scrollIntoView({behavior:'smooth',block:'center'})}
-function api(){return localStorage.getItem(API_KEY)||''}
-$('#apiUrl').value=api();
-$('#apiUrl').addEventListener('change',e=>localStorage.setItem(API_KEY,e.target.value.trim()));
-async function importAO3(){
- const u=$('#url').value.trim(), st=$('#status');
- if(!/^https:\/\/archiveofourown\\.org\\/works\\/\\d+/i.test(u)){st.textContent='请输入公开 AO3 作品链接。';return}
- if(!api()){st.textContent='还没有设置 AO3 抓取服务地址：点击“阅读设置”，在本版本中需要先部署 Cloudflare Worker。';return}
- st.textContent='正在抓取作品……';
- try{
-   const r=await fetch(api().replace(/\\/$/,'')+'/api/import?url='+encodeURIComponent(u));
-   const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||'抓取失败');
-   books.unshift(d);save();st.textContent='导入成功。';$('#url').value='';
- }catch(e){st.textContent='导入失败：'+e.message}
+
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, (m) => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[m]));
 }
-function openBook(i){
- const b=books[i];$('#reader').classList.add('on');$('#rmeta').textContent=b.author+' / '+b.chapters.length+' 章';
- $('#article').innerHTML='<h1>'+esc(b.title)+'</h1><div class="by">作者：'+esc(b.author)+'</div>'+b.chapters.map((x,n)=>'<section><h2 style="font:italic 30px Georgia;margin-top:70px">第 '+(n+1)+' 章</h2>'+x+'</section>').join('');
+
+function render() {
+  $('#count').textContent = books.length;
+  $('#library').innerHTML = books.map((b, i) => `
+    <div class="card">
+      <div class="cover">${esc(b.title)}</div>
+      <h3>${esc(b.title)}</h3>
+      <p>${esc(b.author || '未知作者')} · ${b.chapters?.length || 0} 章</p>
+      <button data-book-index="${i}">阅读</button>
+    </div>
+  `).join('');
 }
-function closeReader(){$('#reader').classList.remove('on')}
-function toggleSettings(){$('#settings').classList.toggle('on')}
-function css(){let r=document.documentElement.style;r.setProperty('--size',$('#size').value+'px');r.setProperty('--lh',(Number($('#lh').value)/10).toFixed(1));r.setProperty('--letter',$('#letter').value+'px');r.setProperty('--measure',$('#measure').value+'px');r.setProperty('--reader', $('#bg').value);r.setProperty('--readerInk',$('#ink').value);r.setProperty('--para',($('#para').value/10)+'em')}
-['size','lh','letter','measure','bg','ink','para'].forEach(id=>$(('#'+id)).addEventListener('input',css));
-$('#fontFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let url=URL.createObjectURL(f);let style=document.getElementById('customFont')||document.head.appendChild(Object.assign(document.createElement('style'),{id:'customFont'}));style.textContent=`@font-face{font-family:MyArchiveFont;src:url("${url}") format("truetype")} .article{font-family:MyArchiveFont,serif}`});
-function resetSettings(){localStorage.removeItem('ia_settings');location.reload()}
-render();css();
+
+function openImport() {
+  const target = $('#url');
+  target.scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(() => target.focus(), 350);
+}
+
+function api() {
+  return (localStorage.getItem(API_KEY) || '').trim().replace(/\/$/, '');
+}
+
+function toggleSettings() {
+  $('#settings').classList.toggle('on');
+}
+
+function closeReader() {
+  $('#reader').classList.remove('on');
+}
+
+function css() {
+  const root = document.documentElement.style;
+  root.setProperty('--size', $('#size').value + 'px');
+  root.setProperty('--lh', (Number($('#lh').value) / 10).toFixed(1));
+  root.setProperty('--letter', $('#letter').value + 'px');
+  root.setProperty('--measure', $('#measure').value + 'px');
+  root.setProperty('--reader', $('#bg').value);
+  root.setProperty('--readerInk', $('#ink').value);
+  root.setProperty('--para', (Number($('#para').value) / 10) + 'em');
+
+  const values = [
+    $('#size').value + 'px',
+    (Number($('#lh').value) / 10).toFixed(1),
+    $('#letter').value + 'px',
+    $('#measure').value + 'px',
+    '',
+    '',
+    (Number($('#para').value) / 10).toFixed(1) + 'em'
+  ];
+  document.querySelectorAll('.row output').forEach((out, i) => {
+    out.textContent = values[i] || '';
+  });
+}
+
+function openBook(i) {
+  const b = books[i];
+  if (!b) return;
+  $('#reader').classList.add('on');
+  $('#rmeta').textContent = (b.author || '未知作者') + ' / ' + (b.chapters?.length || 0) + ' 章';
+  $('#article').innerHTML =
+    '<h1>' + esc(b.title) + '</h1>' +
+    '<div class="by">作者：' + esc(b.author || '未知作者') + '</div>' +
+    (b.chapters || []).map((x, n) =>
+      '<section><h2 style="font:italic 30px Georgia;margin-top:70px">第 ' +
+      (n + 1) + ' 章</h2>' + x + '</section>'
+    ).join('');
+}
+
+async function importAO3() {
+  const u = $('#url').value.trim();
+  const st = $('#status');
+
+  if (!/^https:\/\/archiveofourown\.org\/works\/\d+/i.test(u)) {
+    st.textContent = '请输入公开 AO3 作品链接。';
+    return;
+  }
+
+  if (!api()) {
+    st.textContent = '请先打开“阅读设置”，填写 Cloudflare Worker 地址。';
+    toggleSettings();
+    return;
+  }
+
+  st.textContent = '正在抓取作品……';
+
+  try {
+    const response = await fetch(api() + '/api/import?url=' + encodeURIComponent(u));
+    const data = await response.json();
+
+    if (!response.ok || data.error) {
+      throw new Error(data.error || '抓取失败');
+    }
+
+    books.unshift(data);
+    save();
+    st.textContent = '导入成功，作品已加入书库。';
+    $('#url').value = '';
+  } catch (e) {
+    st.textContent = '导入失败：' + (e.message || e);
+  }
+}
+
+function resetSettings() {
+  localStorage.removeItem(API_KEY);
+  location.reload();
+}
+
+// 顶部按钮：改为 JS 事件监听，手机浏览器也能稳定响应
+document.querySelectorAll('.topnav button').forEach((button, index) => {
+  button.addEventListener('click', () => {
+    if (index === 0) $('#books').scrollIntoView({ behavior:'smooth' });
+    if (index === 1) toggleSettings();
+    if (index === 2) openImport();
+  });
+});
+
+document.querySelector('.import button').addEventListener('click', importAO3);
+document.querySelector('#reader .rbar button:first-child').addEventListener('click', closeReader);
+document.querySelector('#reader .rbar button:last-child').addEventListener('click', toggleSettings);
+
+$('#apiUrl').value = api();
+$('#apiUrl').addEventListener('input', (e) => localStorage.setItem(API_KEY, e.target.value.trim()));
+$('#apiUrl').addEventListener('change', (e) => localStorage.setItem(API_KEY, e.target.value.trim()));
+
+['size','lh','letter','measure','bg','ink','para'].forEach((id) => {
+  $('#' + id).addEventListener('input', css);
+});
+
+$('#fontFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  let style = document.getElementById('customFont');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'customFont';
+    document.head.appendChild(style);
+  }
+  style.textContent = '@font-face{font-family:MyArchiveFont;src:url("' + url + '")} .article{font-family:MyArchiveFont,serif}';
+});
+
+$('#library').addEventListener('click', (e) => {
+  const button = e.target.closest('[data-book-index]');
+  if (button) openBook(Number(button.dataset.bookIndex));
+});
+
+render();
+css();
 </script>
 </body></html>
